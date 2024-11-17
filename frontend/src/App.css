@@ -1,0 +1,29 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  margin: 20px;  
+  padding-left:300px;
+  padding-top: 0px;
+}
+
+input[type="file"] {
+  margin: 20px 0;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.error {
+  margin-top: 20px;
+  color: red;
+  font-weight: bold;
+}
