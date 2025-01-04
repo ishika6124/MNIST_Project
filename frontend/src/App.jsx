@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './App.css';
+import './index.css';
 
 const App = () => {
   const [image, setImage] = useState(null);
@@ -7,7 +7,6 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -15,7 +14,6 @@ const App = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!image) {
@@ -53,31 +51,51 @@ const App = () => {
   };
 
   return (
-    <div className="App">
-      <h1>MNIST Digit Recognition</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-yellow-500 text-white">
+      <h1 className="text-5xl font-extrabold mb-6 animate-pulse tracking-wide">
+        MNIST Digit Recognition
+      </h1>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center bg-white text-gray-800 p-6 rounded-3xl shadow-2xl transform hover:scale-105 transition duration-500"
+      >
         <input
           type="file"
           accept="image/*"
           onChange={handleFileChange}
           required
+          className="mb-4 border-2 border-dashed border-gray-400 rounded-lg p-3 w-full text-center bg-gray-100 hover:border-purple-500 focus:outline-none"
         />
-        <button type="submit" disabled={loading}>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`px-6 py-3 font-bold text-white rounded-full transition-transform duration-300 ${
+            loading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-700 hover:scale-110'
+          }`}
+        >
           {loading ? 'Processing...' : 'Upload and Predict'}
         </button>
       </form>
 
       {prediction !== null && (
-        <div className="result">
-          <h2>Predicted Digit: {prediction}</h2>
+        <div className="mt-6 bg-green-500 text-white p-4 rounded-lg shadow-lg animate-bounce">
+          <h2 className="text-3xl font-semibold">
+            Predicted Digit: <span className="text-yellow-300">{prediction}</span>
+          </h2>
         </div>
       )}
 
       {error && (
-        <div className="error">
-          <h2>{error}</h2>
+        <div className="mt-6 bg-red-500 text-white p-4 rounded-lg shadow-lg animate-shake">
+          <h2 className="text-2xl font-semibold">{error}</h2>
         </div>
       )}
+
+      <footer className="absolute bottom-4 text-sm text-gray-300">
+        Made with 💜 by Ishika
+      </footer>
     </div>
   );
 };
