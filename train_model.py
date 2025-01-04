@@ -36,4 +36,4 @@ test_loss, test_acc = model.evaluate(test_images, test_labels)
 print(f"Test accuracy: {test_acc}")
 
 # Save the trained model
-model.save('mnist_model.h5')
+model.save('mnist_model.keras')

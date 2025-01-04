@@ -7,12 +7,42 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 # Load the MNIST model
-model = load_model('mnist_model.h5')
+model = load_model('mnist_model.keras')
 
 # Directory for storing uploaded files
 UPLOAD_DIR = './uploads'
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
+
+def preprocess_image(filepath):
+    """
+    Preprocess the image to match the MNIST model's input requirements.
+    """
+    # Read the image
+    image = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
+
+    # Handle alpha channel (if present)
+    if image.shape[-1] == 4:
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+
+    # Convert to grayscale (if not already)
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Resize to 28x28 pixels
+    image = cv2.resize(image, (28, 28))
+
+    # Normalize pixel values to [0, 1]
+    image = image / 255.0
+
+    # Invert colors if the background is white
+    if np.mean(image) > 0.5:  # White background
+        image = 1.0 - image
+
+    # Add batch and channel dimensions
+    image = np.expand_dims(image, axis=(0, -1))  # Shape (1, 28, 28, 1)
+
+    return image
 
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
@@ -22,19 +52,25 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
             # Parse the uploaded file
             boundary = self.headers['Content-Type'].split('=')[1]
-            file_data = post_data.split(b'\r\n')[4]
+            headers_and_file = post_data.split(b'\r\n\r\n', 1)
+            file_headers = headers_and_file[0]
+            file_data = headers_and_file[1].split(b'\r\n--', 1)[0]
 
-            # Save the uploaded file
-            filepath = os.path.join(UPLOAD_DIR, 'uploaded_image.png')
+            # Detect file type from headers (default to .png if unknown)
+            filename = "uploaded_image"
+            if b"filename=" in file_headers:
+                filename = file_headers.split(b'filename="')[1].split(b'"')[0].decode()
+            extension = os.path.splitext(filename)[1].lower()
+            if extension not in ['.png', '.jpeg', '.jpg']:
+                extension = '.png'  # Default to PNG if no extension is provided
+
+            filepath = os.path.join(UPLOAD_DIR, f"uploaded_image{extension}")
             with open(filepath, 'wb') as f:
                 f.write(file_data)
 
             try:
                 # Preprocess the image
-                image = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
-                image = cv2.resize(image, (28, 28))
-                image = image / 255.0
-                image = np.expand_dims(image, axis=(0, -1))  # Shape (1, 28, 28, 1)
+                image = preprocess_image(filepath)
 
                 # Predict using the model
                 prediction = model.predict(image)
